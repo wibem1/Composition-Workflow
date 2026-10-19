@@ -1,0 +1,14 @@
+Actual Qt Quick UI created; no QML errors
+Scrollable content height: 1648.0
+Actual QML idea editing OK
+Actual main scrollbar pointer interaction scrolls content
+Actual mouse wheel scrolls main content
+Smaller window follows viewport; bottom remains reachable
+Both actual model selectors save selections; manual model names remain usable
+Correction-copy button activates with a plan; result status is visible in the notation area
+Direct button keeps the native Qt host visible/alive and reports a failure without blocking controls
+qt.qml.usedbeforedeclared: /workspace/scratch/f86916e11ab6/composition-shared/MuseScore/AI-Notation-Studio-App.qml:1057:19 Variable "i" is used before its declaration at 1175:22.
+qt.qml.usedbeforedeclared: /workspace/scratch/f86916e11ab6/composition-shared/MuseScore/AI-Notation-Studio-App.qml:1065:21 Variable "i" is used before its declaration at 1175:22.
+qt.qml.usedbeforedeclared: /workspace/scratch/f86916e11ab6/composition-shared/MuseScore/AI-Notation-Studio-App.qml:1172:17 Variable "i" is used before its declaration at 1175:22.
+file:///workspace/scratch/f86916e11ab6/composition-shared/MuseScore/AI-Notation-Studio-App.qml:184:5: QML Settings: The Settings type from Qt.labs.settings is deprecated and will be removed in a future release. Please use the one from QtCore instead.
+file:///workspace/scratch/f86916e11ab6/composition-shared/MuseScore/AI-Notation-Studio-App.qml:93:5: QML Settings: The Settings type from Qt.labs.settings is deprecated and will be removed in a future release. Please use the one from QtCore instead.

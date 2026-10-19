@@ -1,0 +1,34 @@
+PASS openai token categories without double-counted thinking/cache
+PASS anthropic token categories without double-counted thinking/cache
+PASS google token categories without double-counted thinking/cache
+PASS missing usage remains unknown
+PASS null usage remains unknown
+PASS negative tokens remains unknown
+PASS fractional tokens remains unknown
+PASS cache exceeds input remains unknown
+PASS missing output count remains unknown
+PASS conflicting cache writes remains unknown
+PASS quoted fake usage remains unknown
+PASS nested fake usage remains unknown
+PASS no response remains unknown
+PASS OpenAI cache read/write price
+PASS OpenAI long-context price threshold
+PASS Anthropic 5m/1h write prices
+PASS Gemini thinking and cached price
+PASS nullable optional cache counts
+PASS persistent totals/order and idempotent accounting
+PASS interrupted request stays visible after restart
+PASS unpriced model tracks usage and marks incomplete cost
+PASS request retains model and tariff snapshot
+PASS explicit free-tier zero prices
+PASS invalid custom price is rejected
+PASS price settings validation and persistence
+PASS promotional price expiration
+PASS actual ai_command/ai_poll integration records usage
+PASS paid usage counted even when answer text cannot be read
+PASS HTTP error without usage is never reported as known zero cost
+PASS timeout remains incomplete
+PASS root requests reset order while follow-up stages accumulate
+PASS cost overview text and estimate label
+32 cost tests passed
+PASS: 28 provider/mode request fixtures, default, restart persistence, busy lock, invalid settings and diagnostics

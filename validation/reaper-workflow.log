@@ -1,0 +1,3 @@
+PASS REAPER: preview without write, exact original guard, durable raw/source, apply once, reload, analysis→revision, model call only on review, transition boundary
+PASS model catalogs: future IDs, Google capability filtering, OpenAI non-text filter, Anthropic/Google pagination
+PASS actual JSON translator: tempo events and per-track Sustain, invalid controller rejected

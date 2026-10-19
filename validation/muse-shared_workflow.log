@@ -1,0 +1,17 @@
+Native context newParts 0 2 16 OK
+Native context newParts 4 2 17 OK
+Native context append 64 1 32 OK
+Mode 1 all three workflows OK
+Mode 2 all three workflows OK
+Mode 3 all three workflows OK
+Mode 4 all three workflows OK
+Mode 5 all three workflows OK
+Mode 6 all three workflows OK
+Captured context/models, key preflight and per-stage cost ledger OK
+Mid-measure alignment and native instrument transposition OK
+Pickup, German instrument aliases, original score preservation and channel allocation OK
+PASS native XML replacement: exact measure count, prefix/suffix notes, MusicXML 4 schema
+PASS workflow glue: original conflict, applied lock, transition count, analysis archive, review, invalid raw response preserved
+qt.qml.usedbeforedeclared: :388:19 Variable "i" is used before its declaration at 506:22.
+qt.qml.usedbeforedeclared: :396:21 Variable "i" is used before its declaration at 506:22.
+qt.qml.usedbeforedeclared: :503:17 Variable "i" is used before its declaration at 506:22.

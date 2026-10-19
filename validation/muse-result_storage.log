@@ -1,0 +1,7 @@
+QML clipboard, Unicode, native read newlines, verified log, fallback and failures OK
+SKIP Windows diagnostic-export orchestration; clipboard and storage tests passed
+qt.qml.usedbeforedeclared: /workspace/scratch/f86916e11ab6/composition-shared/MuseScore/AI-Notation-Studio-App.qml:1057:19 Variable "i" is used before its declaration at 1175:22.
+qt.qml.usedbeforedeclared: /workspace/scratch/f86916e11ab6/composition-shared/MuseScore/AI-Notation-Studio-App.qml:1065:21 Variable "i" is used before its declaration at 1175:22.
+qt.qml.usedbeforedeclared: /workspace/scratch/f86916e11ab6/composition-shared/MuseScore/AI-Notation-Studio-App.qml:1172:17 Variable "i" is used before its declaration at 1175:22.
+file:///workspace/scratch/f86916e11ab6/composition-shared/MuseScore/AI-Notation-Studio-App.qml:184:5: QML Settings: The Settings type from Qt.labs.settings is deprecated and will be removed in a future release. Please use the one from QtCore instead.
+file:///workspace/scratch/f86916e11ab6/composition-shared/MuseScore/AI-Notation-Studio-App.qml:93:5: QML Settings: The Settings type from Qt.labs.settings is deprecated and will be removed in a future release. Please use the one from QtCore instead.

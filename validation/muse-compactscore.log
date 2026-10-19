@@ -1,0 +1,8 @@
+Elegie: Qt roundtrip, native notation, MusicXML XSD OK
+Herbstlicher-Abendgesang: Qt roundtrip, native notation, MusicXML XSD OK
+Provider responses, truncation, costs, redaction and application import/open OK
+OpenAI, Anthropic and Google request/callback contracts OK
+Independent stage credentials and single callback delivery OK
+qt.qml.usedbeforedeclared: :388:19 Variable "i" is used before its declaration at 506:22.
+qt.qml.usedbeforedeclared: :396:21 Variable "i" is used before its declaration at 506:22.
+qt.qml.usedbeforedeclared: :503:17 Variable "i" is used before its declaration at 506:22.

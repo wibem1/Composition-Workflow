@@ -1,0 +1,10 @@
+Actual Qt Quick UI created; no QML errors
+Scrollable content height: 1959.0
+Actual QML idea editing OK
+Actual main scrollbar pointer interaction scrolls content
+Actual mouse wheel scrolls main content
+Smaller window follows viewport; bottom remains reachable
+Both actual model selectors save selections; manual model names remain usable
+Correction-copy button activates with a plan; result status is visible in the notation area
+Direct button keeps the native Qt host visible/alive and reports a failure without blocking controls
+QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '/tmp/runtime-root'

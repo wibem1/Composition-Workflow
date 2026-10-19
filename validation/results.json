@@ -1,0 +1,134 @@
+[
+  {
+    "name": "core",
+    "exit_code": 0,
+    "seconds": 0.12,
+    "skips": []
+  },
+  {
+    "name": "reaper-workflow",
+    "exit_code": 0,
+    "seconds": 0.05,
+    "skips": []
+  },
+  {
+    "name": "reaper-midi",
+    "exit_code": 0,
+    "seconds": 0.08,
+    "skips": [
+      "SKIP actual LilyPond compilation: set LILYPOND_EXE to an installed compiler"
+    ]
+  },
+  {
+    "name": "reaper-provider",
+    "exit_code": 0,
+    "seconds": 0.11,
+    "skips": []
+  },
+  {
+    "name": "maestro-engine",
+    "exit_code": 0,
+    "seconds": 1.94,
+    "skips": []
+  },
+  {
+    "name": "maestro-ui",
+    "exit_code": 0,
+    "seconds": 0.66,
+    "skips": []
+  },
+  {
+    "name": "muse-compactscore",
+    "exit_code": 0,
+    "seconds": 0.28,
+    "skips": []
+  },
+  {
+    "name": "muse-workflows",
+    "exit_code": 0,
+    "seconds": 2.19,
+    "skips": []
+  },
+  {
+    "name": "muse-shared_workflow",
+    "exit_code": 0,
+    "seconds": 2.29,
+    "skips": []
+  },
+  {
+    "name": "muse-diagnostic_composition",
+    "exit_code": 0,
+    "seconds": 0.22,
+    "skips": []
+  },
+  {
+    "name": "muse-model_catalog",
+    "exit_code": 0,
+    "seconds": 0.14,
+    "skips": []
+  },
+  {
+    "name": "muse-startup_record",
+    "exit_code": 0,
+    "seconds": 0.11,
+    "skips": []
+  },
+  {
+    "name": "muse-clipped_window",
+    "exit_code": 0,
+    "seconds": 1.5,
+    "skips": []
+  },
+  {
+    "name": "muse-update",
+    "exit_code": 0,
+    "seconds": 0.16,
+    "skips": []
+  },
+  {
+    "name": "muse-result_storage",
+    "exit_code": 0,
+    "seconds": 0.53,
+    "skips": [
+      "SKIP Windows diagnostic-export orchestration; clipboard and storage tests passed"
+    ]
+  },
+  {
+    "name": "muse-diagnostic_helper",
+    "exit_code": 0,
+    "seconds": 0.04,
+    "skips": [
+      "SKIP Windows PowerShell diagnostic helper: powershell.exe unavailable"
+    ]
+  },
+  {
+    "name": "muse-ui-qt6",
+    "exit_code": 0,
+    "seconds": 1.12,
+    "skips": []
+  },
+  {
+    "name": "muse-ui-qt5",
+    "exit_code": 0,
+    "seconds": 1.06,
+    "skips": []
+  },
+  {
+    "name": "muse-loader-qt6",
+    "exit_code": 0,
+    "seconds": 0.63,
+    "skips": []
+  },
+  {
+    "name": "muse-loader-qt5",
+    "exit_code": 0,
+    "seconds": 0.82,
+    "skips": []
+  },
+  {
+    "name": "muse-restart-qt5",
+    "exit_code": 0,
+    "seconds": 1.55,
+    "skips": []
+  }
+]

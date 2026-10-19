@@ -1,0 +1,17 @@
+{
+  "Engine": {
+    "base": "9a38fa2b4e566c4f3875cc679189d6f998e6f45b",
+    "candidate": "51e35d8461cced62057543c1f7c96222e1a769e9",
+    "remotePublished": false
+  },
+  "Reaper": {
+    "base": "d307d19e783c0bbbb9e9df5a8902968614a43ddc",
+    "candidate": "6f3b0a081894feca8b99d36a0e1898d2ec8a6cb8",
+    "remotePublished": false
+  },
+  "MuseScore": {
+    "base": "c6a657c9d13d3903bd6df5c18e27285b4f652f46",
+    "candidate": "2adefecc207508e96c0f08ac78605d2ab253eaff",
+    "remotePublished": false
+  }
+}

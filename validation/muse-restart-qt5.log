@@ -1,0 +1,5 @@
+Invalid QML update preserves the running app and active startup record
+Same cached engine reopens the installed update, not the bundled older version
+Fresh process loads the installed update from disk
+Invalid startup record falls back to the bundled version
+QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '/tmp/runtime-root'

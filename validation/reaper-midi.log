@@ -1,0 +1,33 @@
+PASS full script Lua 5.4 syntax
+PASS full script startup and first visible UI frame with simulated REAPER/ImGui
+PASS process result '0\nOK'
+PASS process result '0\r\nOK\nwarning'
+PASS process result '1\nerror'
+PASS process result '-1\n'
+PASS process result '0'
+PASS process result ''
+PASS process result 'garbage\n'
+PASS process result None
+PASS zero exit imports MIDI between existing tracks and preserves cursor/GUIDs/log
+PASS nonzero compiler exit
+PASS missing/timeout process response
+PASS malformed process response
+PASS missing MIDI file
+PASS InsertMedia produces no tracks
+PASS empty imported track
+PASS non-MIDI imported item
+PASS one-bar continuation at QN 8 accepted
+PASS wrong continuation start rolled back
+PASS wrong continuation length rolled back
+PASS MIDI block insertion, idempotence and invalid input
+PASS update same version
+PASS update older version
+PASS update HTTP failure
+PASS update invalid payload
+PASS update syntax failure
+PASS update installation and backup
+PASS update install rename failure restores original
+SKIP actual LilyPond compilation: set LILYPOND_EXE to an installed compiler
+PASS transition variant retains original and prefix in one Undo block
+PASS ambiguous transition track mapping rolls back import
+31 tests passed

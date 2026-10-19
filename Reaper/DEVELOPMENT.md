@@ -1,0 +1,428 @@
+# Entwicklung
+
+CURRENT: Composition Studio 1.0.57
+Lokale Engine: Composition Engine 2.3.1, Build 231
+Runtime: Composition Studio.lua
+
+Regeln: Vor Aenderungen den tatsaechlichen Quellstand pruefen. Keine Patch-Ketten. Jede Änderung erhält eine eindeutige Versionsnummer. Die aktive Update-Linie bleibt auf main; keine parallelen Nutzerinstallationen. SAFE wird erst nach praktischer Prüfung vergeben. Bei reiner Engine-Arbeit bleiben REAPER-UI, MIDI-Anwendung, Providerzugriff und Updater unangetastet, soweit nicht zwingend erforderlich. Technische Tests beweisen keine musikalische Qualitaet.
+
+Zielvertrag: Nutzerauftrag -> fertige freie Komposition -> rein technische Uebersetzung -> optional kurze Beschreibung danach. Keine vorgeschaltete verbale Klangvorstellung, kein Formplan und kein musikalischer Entwurf vor der Komposition. Die technische Uebersetzung trifft keine eigenen musikalischen Entscheidungen.
+
+Migration 2026-09-26: Der produktive REAPER-Stand wurde aus Reaper-Composition, Branch composition-studio, in dieses Repository ueberfuehrt. Das Quellrepository bleibt bis zum abgeschlossenen Vergleich als Sicherung bestehen.
+
+
+## 2026-10-04 – Notationsmodul
+
+- v1.0.5 führt den ersten kleinen Notations-Prototypen ein.
+- Keine neue App und kein separater Updater: Integration in das bestehende `Composition Studio.lua`.
+- Phase 1 verändert ausschließlich REAPER-Notation-Displaydaten (`disp_len`), nicht die MIDI-Performance.
+- Bedienung: Studio-Menü → Notation → Auto / 1/8 / 1/16 / 1/32 / Originale Darstellung.
+- Jede Änderung ist als REAPER-Undo-Block gekapselt.
+- Nächste Stufen erst nach Test: dargestellte Positionen, Stimmen/Systeme, Artikulation/Spielanweisungen, KI-Notensatz, semantische Playback-Schicht, Mehrspur-SWAM, MusicXML/PDF.
+
+
+## 2026-10-04 – Notation-Prototyp 0.2 / v1.0.7
+
+Aus dem ersten Praxistest ergab sich: Darstellungsquantisierung allein reicht nicht; die Noten stehen in REAPER bei langen/dichten Items horizontal zu eng. Deshalb hat Notenbild/Spacing Vorrang vor weiteren Notationsfunktionen.
+
+Neu:
+- Lesbar machen: Zoom to content + vier horizontale Zoom-in-Schritte.
+- Breiter / Schmaler: direkte horizontale Feineinstellung.
+- Auswahl einpassen: REAPER-Aktion View: Zoom to selected notes/CC.
+- Inhalt einpassen: REAPER-Aktion View: Zoom to content.
+- Aktions-IDs werden nach Möglichkeit dynamisch aus dem MIDI-Editor-Aktionsbereich ermittelt, statt versionsabhängig fest verdrahtet zu werden.
+
+Nächster Schritt erst nach Sichttest des Notenbilds.
+
+
+## 2026-10-04 – Notation-Prototyp 0.3 / v1.0.8
+
+Nach Sichttest von v1.0.7 wird REAPERs eigene Option **Notation: Proportional (musical) note spacing** in das Modul integriert. Sie verteilt kurze Noten großzügiger und lange Werte kompakter als das absolute Piano-Roll-Zeitraster.
+
+- sichtbarer Schalter Musikalische Abstände
+- Lesbar machen aktiviert diesen Modus automatisch
+- danach Zoom to content + drei horizontale Zoom-in-Schritte
+- MIDI-Daten bleiben unverändert
+- Toggle-State wird über REAPERs MIDI-Editor Action Section abgefragt
+
+
+## 2026-10-04 – Notation-Prototyp 0.4 / v1.0.9
+
+Erste automatische Notensatzbereinigung. Wichtig: `disp_pos` ist als REAPER-Notationseigenschaft nachgewiesen, seine direkte numerische Semantik ist aber nicht ausreichend dokumentiert. Deshalb wird in dieser Stufe **kein eigener disp_pos-Wert geraten**. Stattdessen werden ausschließlich native REAPER-Notation-Aktionen verwendet.
+
+Profil „Notensatz bereinigen“:
+- Proportional (musical) note spacing an
+- Display quantization 1/16
+- Minimum display quantization note length 1/64
+- Automatically detect triplets an
+- Automatically voice overlapping notes an
+- anschließend Ansicht einpassen + moderat vergrößern
+
+MIDI-Performance bleibt unverändert. Alle Änderungen liegen in einem REAPER-Undo-Block.
+
+
+## 2026-10-04 – v1.0.10 Updater-Fix
+
+Praxisfehler: lokale v1.0.8 meldete trotz v1.0.9 auf main „Bereits aktuell“. Diagnose: der Raw-GitHub-Abruf lieferte offenbar eine veraltete Kopie. Der Updater verwendet nun Cache-Control/Pragma no-cache und bei verdächtig identischer Remote-Version einen zweiten Abruf über die GitHub Contents API mit Raw-Accept-Header.
+
+
+## 2026-10-04 – v1.0.11 Lesbar-machen-Fix
+
+Praxisfehler: „Lesbar machen“ führte bei jedem Klick weitere horizontale Zoom-in-Schritte aus. Das widerspricht der Bedeutung einer festen Arbeitsansicht.
+
+Fix:
+- feste Zoom-in-Serie entfernt
+- Lesbar machen = musikalische Abstände aktivieren + View: Zoom to content
+- wiederholtes Klicken soll dieselbe Ansicht ergeben
+- Breiter/Schmaler bleibt ausschließlich manuelle Feineinstellung
+
+
+## 2026-10-04 – Notation-Prototyp 0.5 / v1.0.12
+
+Recherche bestätigt `disp_pos` als individuelle REAPER-Notationseigenschaft pro Note. Eine belastbare öffentliche Beschreibung der numerischen Einheit wurde nicht gefunden. Deshalb kein geratenes Spacing, sondern ein Mess-Prototyp:
+- ausgewählte Note(n): -0.50, -0.25, 0, +0.25, +0.50, +1.00
+- Notation Event bleibt am Note-On gekoppelt
+- tatsächliche MIDI-Position bleibt unverändert
+- erst nach Sichttest wird daraus ein automatischer Abstandalgorithmus entwickelt
+
+
+## 2026-10-04 – v1.0.13 / Notation Workspace 0.1
+
+Architekturwechsel: Notation ist keine Unterseite des Studio-Hauptfensters mehr. Der sichtbare REAPER-Notation-Prototyp (Spacing, Lesbar machen, disp_pos-Messung) wird nicht weitergeführt. Der Button „Notation“ öffnet ein separates ReaImGui-Fenster innerhalb von REAPER. Dieses Fenster ist der feste Host für den kommenden editierbaren Score-Editor.
+
+Der Workspace 0.1 enthält bewusst noch keinen Score-Renderer. Menüs zeigen nur die geplante Funktionsstruktur und sind deaktiviert. Ziel des Tests ist ausschließlich: eigenes Fenster, unabhängiges Öffnen/Schließen und keine Regression im Hauptfenster.
+
+
+## 2026-10-04 – v1.0.14 / Notation Workspace 0.2
+
+Bedienprinzip korrigiert: keine „MIDI laden“-Funktion. Beim Klick auf „Notation“ wird die aktuelle REAPER-Auswahl automatisch in den Workspace übernommen. Mehrere ausgewählte MIDI-Items werden gemeinsam erfasst.
+
+Erster funktionaler Datenkern: Notenliste, Notenauswahl, ±1 Halbton und Dauer halbieren/verdoppeln; Änderungen gehen direkt in das zugrunde liegende REAPER-MIDI und sind per REAPER Undo rückgängig. Der grafische Score-Renderer folgt als nächste Stufe.
+
+
+## 2026-10-04 – v1.0.15 / Scope-Fix
+
+Fehler in v1.0.14: `score_capture_selection` wurde durch die Reihenfolge der Lua-Deklarationen nicht als lokale Funktion aufgelöst und beim Klick auf „Notation“ als nil-global aufgerufen. Die gesamte Score-Bridge-Hilfsschicht steht nun vor dem Hauptloop. Zusätzlich geprüft: genau eine Definition von `score_capture_selection`, Definition vor allen Aufrufstellen.
+
+
+## 2026-10-04 – v1.0.16 / Notation Workspace 0.3
+
+Erster grafischer Score-Prototyp in ReaImGui. Aus dem bereits funktionierenden Score-Modell werden zwei Systeme, Taktlinien und Notenköpfe gezeichnet. Die Darstellung ist ausdrücklich noch kein endgültiger Notensatz, sondern ein Interaktions-Prototyp.
+
+Neu:
+- grafische Note ↔ Score-Note ↔ REAPER-MIDI Zuordnung
+- Klick auf Notenkopf setzt dieselbe Auswahl wie die Diagnose-Liste
+- vorhandene Tonhöhen-/Dauer-Befehle wirken auf grafisch gewählte Note
+- grafische Ansicht aktualisiert sich nach MIDI-Änderung
+
+Erst wenn diese Zuordnung stabil ist, wird der hochwertige Renderer eingebettet.
+
+
+## 2026-10-04 – v1.0.17 / Partiturfarben
+
+Der technische Score-Prototyp bleibt bewusst funktional statt gravurorientiert. Darstellung geändert auf klassisches Notenbild: weißer Hintergrund, schwarze Linien/Noten/Taktstriche; nur die aktuell ausgewählte Note bleibt farbig markiert.
+
+
+## 2026-10-04 – v1.0.18 / ScoreFlow-Renderer-Integration
+
+Der selbst gezeichnete ReaImGui-Score wird nicht weitergeführt. Verifizierte Basis:
+- ScoreFlow (IlyaSkorik/scoreflow), MIT, VexFlow-Engine mit Grand Staff, Beaming, Pausen, Tuplets, Artikulationen, Dynamik und eigenem Layout/Collision-System.
+- reaper_webview (SadFrozz/reaper_webview), MIT, dockbare/freie WebView-Panels in REAPER; macOS via WKWebView.
+
+Prototype 0.4:
+- aktuelle REAPER-MIDI-Auswahl wird automatisch in ScoreFlow-kompatibles JSON übersetzt
+- lokaler HTML-Host wird unter dem REAPER Resource Path erzeugt
+- ScoreFlow-Engine wird auf einen festen Commit gepinnt und für diesen Prototyp über jsDelivr geladen
+- WEBVIEW_Navigate öffnet die Partitur als REAPER-Panel
+- bei fehlender reaper_webview-Erweiterung saubere Fallback-Meldung statt Fehler
+
+Der Prototyp ist zunächst 4/4 + Piano/Grand Staff. Nächste Stufe: WebView↔Lua-Rückkanal für direkte Score-Bearbeitung und danach lokale Bündelung der ScoreFlow-Assets.
+
+
+## 2026-10-04 – v1.0.19 / ScoreFlow-Rückkanal
+
+Die veröffentlichte reaper_webview 0.2.0 bietet nur WEBVIEW_Navigate. Für echte Bearbeitung benötigt Composition Studio einen Rückkanal aus WKWebView nach Lua. Statt Polling-Server oder Dateihacks wird ein minimaler macOS-Patch gebaut:
+- zusätzlicher WKScriptMessageHandler csBridge
+- JavaScript API window.compositionStudioBridge.postMessage(...)
+- native Übergabe in REAPER ExtState (ScoreBridgeMessage + monotone ScoreBridgeSeq)
+- Composition Studio pollt ExtState im normalen defer-loop
+- NoteTap bzw. Toolbar-Befehl wird wieder auf score_state.csid und damit konkrete REAPER-MIDI-Note abgebildet
+- nach MIDI-Änderung wird die bestehende ScoreFlow-WebView-Instanz neu navigiert/rendered
+
+Build ist reproduzierbar über .github/workflows/build-webview-bridge.yml; Grundlage ist exakt reaper_webview v0.2.0. Keine lokale Serverkomponente.
+
+
+## 2026-10-04 – v1.0.20 / ScoreFlow-Auswahl
+
+Fehlerursache für wirkungsloses Anklicken: Der Polyfill für onNoteTap lag in einem klassischen Script und griff auf `score` zu, das als `const` nur im ES-Modul-Scope existierte. Der ReferenceError wurde durch try/catch verschluckt.
+
+Korrektur:
+- Score wird als `window.csScore` explizit für die Interaktionsschicht veröffentlicht.
+- Einzelklick: nearest-note Hit-Test über ScoreFlows vorhandene `state.noteHits`, sichtbare blaue Markierung.
+- Klick-Drag: Rechteckauswahl über die Zentren der vorhandenen ScoreFlow-Hitboxes.
+- Auswahl wird als csid-Liste über die WebView-Bridge übertragen.
+- ±1 Halbton und Dauerfaktor werden in einem einzigen REAPER-Undo-Schritt auf die komplette Auswahl angewandt.
+
+
+## 2026-10-04 – v1.0.21 / Drag + Bridge-Diagnose
+
+Zwei getrennte Fehlerbilder:
+- Drag-Selektion wurde korrekt im pointerup erzeugt, danach aber vom normalen ScoreFlow-click-Handler wieder auf eine einzelne Note reduziert. Ein Capture-click-Suppressor unterdrückt nun genau den Folgeclick nach einem echten Drag.
+- Sichtbare Markierung ist reine Browserfunktion und beweist nicht, dass der native csBridge installiert ist. Die ScoreFlow-Toolbar zeigt deshalb nun explizit „Bridge aktiv“ bzw. „Bridge fehlt“. Bearbeitungsbuttons melden ebenfalls sofort, wenn kein nativer Rückkanal vorhanden ist.
+
+
+## 2026-10-04 – v1.0.23 / Player + Noten verschieben
+
+Notation Workspace erweitert:
+- eigene Playerleiste im ScoreFlow-WebView (Anfang, Play, Pause, Stop), Befehle gehen über csBridge an REAPER und nutzen den nativen REAPER-Transport.
+- direkter Drag auf einer Note verschiebt sie; bei bestehender Mehrfachauswahl wird die ganze Gruppe verschoben.
+- Drag im freien Bereich bleibt Rechteckauswahl.
+- vertikale Mausdistanz -> Halbtonschritte; horizontale Distanz -> QN-Verschiebung, auf 0.25 QN gerundet.
+- MIDI-Start und -Ende werden gemeinsam verschoben; Dauer bleibt erhalten; Änderungen sind ein REAPER-Undo-Schritt.
+
+
+## 2026-10-04 – v1.0.25 / MIDI→Notation Transkription
+
+Der bisherige Konverter war die Hauptursache des schlechten Notenbilds: fester 4/4-Takt, starre MIDI-60-Systemtrennung und Restauffüllung bis 1/64. Ersetzt durch:
+- echte REAPER-Taktgrenzen via TimeMap_QNToMeasures / TimeMap_GetMeasureInfo
+- Taktartwechsel als ScoreFlow _ts
+- Quantisierung von Start/Dauer auf 1/16, bei real sehr kurzen Noten adaptiv 1/32
+- beschränkte, saubere Restwerte ohne punktierte Mikrorestketten
+- Instrument-/Tracknamen-basierte Systemzuweisung für Streicher und typische Orchesterinstrumente
+
+Offen: echte Tonart, Single-Staff-Renderer, Stimmenanalyse, taktübergreifende Haltebögen.
+
+
+## 2026-10-04 – v1.0.26 / Single Staff + Notationsdauer
+
+Zwei strukturelle Korrekturen:
+- ScoreFlow wurde als kleiner MIT-konformer Renderer-Fork unter web/scoreflow-cs-render.js übernommen. Ergänzt wurde staffMode = single-treble / single-bass / grand. Einzelinstrumente bekommen damit erstmals wirklich nur einen Notenständer statt eines erzwungenen Klavier-Grand-Staffs.
+- Notationsdauer wird bei kurzen artikulierten MIDI-Tönen aus dem Abstand zum nächsten Anschlag rekonstruiert. MIDI Note-Off bleibt relevant, ist aber nicht mehr automatisch gleichbedeutend mit dem geschriebenen Notenwert. Das verhindert viele falsche 16/32tel plus Mikro-Pausen.
+
+
+## 2026-10-04 – v1.0.27 / Blank Renderer Fix
+
+v1.0.26 band den lokalen Renderer-Fork über raw.githubusercontent.com als ES-Modul ein. WKWebView lädt Raw-GitHub nicht zuverlässig mit einem für ES-Module akzeptierten MIME-Typ; dadurch wurde das Modulskript gar nicht ausgeführt und die Partitur blieb komplett leer. Import jetzt über jsDelivr, auf Commit 5e7c7c5ef5a95d2a29ef8a8f9f13a2e2d5d364ed gepinnt. Laufzeitfehler des Renderers werden sichtbar im Notationsfenster ausgegeben.
+
+
+## 2026-10-04 – v1.0.28 / Mehrspur-Partitur
+
+Mehrere ausgewählte REAPER-Tracks werden nicht mehr in einen gemeinsamen Notenpool gemischt. score_capture_selection trägt track_guid in jede Note; scoreflow_score_json gruppiert nach Track und erzeugt score.parts[]. Der Renderer hat einen Mehrspurpfad mit gemeinsamer Taktgeometrie: pro Takt wird die maximale benötigte Breite aller Parts bestimmt, daraus werden gemeinsame Zeilenumbrüche und X-Positionen berechnet. Jeder Part wird anschließend in diese Geometrie gezeichnet. Trackname erscheint links. Klavier kann grand staff bleiben, Einzelinstrumente single staff.
+
+
+## 2026-10-04 – v1.0.29 / Instrumenterkennung
+
+Fehler: Track-/Take-Namen wie „SWAM Cello 3“ wurden als harte Instrumentangabe verwendet. Bei tatsächlich hohen Violinstimmen führte das zu Bassschlüssel und falschen Labels. Neue Regel: tatsächliche MIDI-Lage (low/high/average pitch) hat Vorrang; Namen sind nur sekundäre Hinweise und müssen zur Lage passen. Widersprüchliche Labels werden neutralisiert, doppelte Namen disambiguiert.
+
+
+## 2026-10-04 – v1.0.32 / Verovio Prototype 0.1
+
+ScoreFlow bleibt als historische Testbasis im Repository, wird aber nicht mehr als sichtbarer Notationsrenderer verwendet. Composition Studio erzeugt nun MEI direkt aus dem REAPER-MIDI-Modell und rendert es mit Verovio 6.3.0 im bestehenden WebView. Jede MIDI-Note trägt eine stabile xml:id csn<csid>, die Verovio in die SVG-Element-IDs übernimmt. Dadurch bleiben Klick, Rechteckauswahl, Drag, Transposition und Daueränderung als Composition-Studio-Funktionen erhalten. Verovios eigene experimentelle Editor-API wird nicht zur Abhängigkeit. Mehrere Tracks werden als getrennte staffDef/staff-Partien kodiert; Piano kann als zweistaviges staffGrp ausgegeben werden.
+
+
+## 2026-10-04 – v1.0.33 / Flüssiger Noten-Drag
+
+Verovio-Drag erhielt eine lokale SVG-Vorschau: während pointermove werden die aktuell markierten csn-Elemente per CSS transform unmittelbar mit der Maus bewegt. Erst bei pointerup werden die Pixelwege in musikalische Delta-Werte quantisiert und über csBridge nach REAPER geschrieben. Sensitivität: ca. 5 px/Halbton, 28 px/Viertel, horizontal weiterhin 0.25 QN Raster. pointercancel setzt Vorschau zurück.
+
+
+## 2026-10-04 – v1.0.34 / Drag-Overlay + metrische Balken
+
+Drag-Performance: echte Verovio-SVG-Noten werden während pointermove nicht mehr transformiert und ihre Bounding-Boxes nicht ständig neu gelesen. Beim pointerdown werden einmalig leichte Overlay-Rechtecke erzeugt; pointermove ändert nur transform des Overlay-Containers. Status wird nur bei Änderung des quantisierten Ziels aktualisiert. Overlay bleibt nach pointerup bis zum erfolgreichen Neurender sichtbar.
+
+MEI-Transkription: Achtel und kürzere Ereignisse werden nun in <beam>-Gruppen innerhalb metrischer Beats kodiert. Simple Meter: Viertelbeat (4/den); Compound Meter 6/8, 9/8, 12/8: punktierte Viertel (1.5 QN). Pausen unterbrechen Balkengruppen.
+
+
+## 2026-10-04 – v1.0.35 / Sichtbares Drag-Ziel
+
+Das reine Rechteck-Overlay war zwar schnell, aber musikalisch nicht orientierend. Beim Drag wird jetzt einmalig die tatsächliche SVG-Gruppe jeder markierten Verovio-Note geklont und in ein separates Overlay-SVG gelegt. pointermove transformiert nur den gemeinsamen Ghost-Container. Die Vorschau snappt bereits während des Ziehens auf dieselben quantisierten dpitch/dqn-Werte, die bei pointerup nach REAPER geschrieben werden. Damit entspricht die sichtbare Ghost-Position dem tatsächlichen Ziel.
+
+
+## 2026-10-04 – v1.0.36 / Notation Studio Palette
+
+Strategiewechsel zurück zum nativen REAPER-Notationseditor. Das WebView/Verovio-Fenster wird aus dem sichtbaren Workflow entfernt; die experimentellen Funktionen bleiben vorerst im Code, werden aber nicht mehr über den Hauptbutton geöffnet.
+
+Neue Oberfläche: kompaktes ReaImGui-Fenster „Notation Studio“ mit CollapsingHeader-Gruppen. Standardmäßig offen ist nur „Lesbarkeit“. Weitere Gruppen: Darstellung/Quantisierung, Stimmen/Notation, Artikulation, Dynamik, Spielweise/SWAM. Zielworkflow: Auswahl im nativen REAPER-Notationseditor -> Rechtsklick -> ein einziger Eintrag „Notation Studio…“ -> Werkzeugpalette.
+
+
+## 2026-10-04 – v1.0.37 / KI + Rechtsklick-Launcher
+
+Notation Studio enthält jetzt eine eigene KI-Gruppe. Die aktive Notenauswahl im MIDI-/Notationseditor wird als NOTATION_SELECTION/SELNOTE-Kontext an den Controller übergeben. Buttons: Auswahl analysieren, Artikulation/Dynamik beurteilen, freier KI-Auftrag zur Auswahl, SWAM-Interpretation.
+
+Zusätzlich erzeugt Composition Studio automatisch Scripts/Composition Studio/Notation Studio.lua und registriert es via AddRemoveReaScript in Section 32060 (MIDI Editor). Das Launcher-Script setzt ExtState OpenNotationStudio und startet Composition Studio bei Bedarf. Wenn in reaper-menu.ini bereits ein [MIDI notation note context]-Block existiert, wird der Launcher dort verlustfrei angehängt; vorher wird eine Backup-Datei geschrieben. Fehlt der Block, wird er absichtlich nicht neu erzeugt, weil ein neu erzeugter Custom-Block REAPERs vollständiges Factory-Kontextmenü ersetzen würde.
+
+
+## 2026-10-04 – v1.0.38 / Saubere Rechtsklick-Integration
+
+Die automatische Manipulation von reaper-menu.ini aus v1.0.37 wurde entfernt. Composition Studio erzeugt weiterhin Scripts/Composition Studio/Notation Studio.lua und registriert es via AddRemoveReaScript in MIDI-Editor Section 32060. Die Einbindung in „MIDI notation note context“ erfolgt einmalig über REAPERs offiziellen Menü-Customizer. Dadurch bleibt REAPERs Standardmenü vollständig unangetastet.
+
+
+## 2026-10-04 – v1.0.39 / Updater-Reparatur
+
+Beim Umbau auf 1.0.38 war der komplette fetch_update/install_update-Block versehentlich mit entfernt worden. v1.0.39 stellt ihn wieder her. Die Primärquelle ist jetzt die GitHub Contents API mit Accept: application/vnd.github.raw+json; raw.githubusercontent.com ist nur noch Fallback. Syntaxprüfung, Backup und Versionsvergleich bleiben erhalten.
+
+
+## 2026-10-04 – v1.0.40 / Notation Studio vollständig ausgelagert
+
+Notation Studio ist jetzt ein eigenes ReaScript im Repository: `Notation Studio.lua` (v0.1.0). Das Fenster und seine aufklappbaren Werkzeuggruppen wurden aus `Composition Studio.lua` entfernt. Composition Studio übernimmt nur noch Installation/Aktualisierung des Begleitskripts, Registrierung in MIDI-Editor Section 32060, Start des Skripts und einen kleinen KI-Dienst über ExtState.
+
+Kommunikation: Notation Studio sendet `NotationAIRequest`, `NotationAIContext` und `NotationAIRequestSeq`; Composition Studio verarbeitet die Anfrage mit dem zentral gewählten Provider/Modell und liefert `NotationAIResult` / `NotationAIResultSeq` zurück. Dadurch bleiben API-Zugang und Modellwahl zentral, die Notationsoberfläche aber vollständig modular.
+
+
+## 2026-10-04 – v1.0.41 / Startfehler vollständig behoben
+
+Zwei Refactoringfehler aus v1.0.40 wurden korrigiert: (1) `version_parts()` und `version_is_newer()` waren entfernt worden, obwohl Updater und Companion-Installer sie aufrufen; beide stehen nun wieder vor allen Aufrufern. (2) Zwischen `info_text()` und `draw_history()` war durch String-Surgery ein `endlocal function` entstanden; die Funktionsgrenze ist wieder syntaktisch korrekt.
+
+
+## 2026-10-04 – v1.0.42 / Vollständige Trennung
+
+Notation Studio wurde vollständig aus `Composition Studio.lua` entfernt: kein Menüpunkt, kein Button, kein Companion-Installer und kein ExtState-KI-Dienst mehr. `Notation Studio.lua` v0.1.1 arbeitet eigenständig, verwendet die gemeinsam gespeicherten Provider-/Modell-/API-Key-Einstellungen direkt und führt seine KI-Aufrufe selbst aus. Beide ReaScripts sind damit unabhängig startbar.
+
+
+## 2026-10-04 – Notation Studio v0.1.2 / native actions actually execute
+
+Two concrete bugs fixed. First, `kbd_enumerateActions()` was incorrectly called with numeric section id 32060; REAPER requires a `KbdSectionInfo` from `SectionFromUniqueID(32060)`. Second, clicking the modeless Notation Studio window removes focus from the MIDI editor, so repeated `MIDIEditor_GetActive()` calls can return nil. The MIDI editor HWND is now captured at script startup and reused. Readability profile now explicitly applies proportional spacing, display quantization 1/16, minimum display note length 1/16, triplet detection and automatic voicing, then zooms to content.
+
+
+## 2026-10-04 – Notation Studio v0.1.3 / größere Schrift
+
+Notation Studio verwendet jetzt eine eigene 20-pt-ReaImGui-Schrift für das gesamte Fenster. Standardfenstergröße von 450x600 auf 520x680 vergrößert, damit die aufklappbaren Bereiche mit der größeren Schrift besser lesbar bleiben.
+
+
+## 2026-10-04 – Notation Studio v0.1.4 / eigener Updater
+
+Notation Studio besitzt jetzt einen eigenständigen Update-Menüpunkt im Drei-Punkte-Menü. Das Skript lädt die aktuelle Version direkt aus dem Repository, prüft Versionsnummer und Lua-Syntax, sichert die vorherige Datei als .backup und startet nach erfolgreichem Update automatisch neu. Damit ist Notation Studio vollständig unabhängig vom Composition-Studio-Updater.
+
+
+## 2026-10-04 – Notation Studio v0.1.5 / Lesbarkeitsprofil
+
+„Lesbarkeit verbessern“ ist jetzt ein kombiniertes Profil statt einer reinen Darstellungsquantisierung. Es aktiviert musikalisch proportionale Abstände, Display-Quantisierung 1/16, eine sinnvolle Mindestnotenlänge, Triolen- und Stimmenautomatik, passt die Auswahl ein und zoomt anschließend moderat horizontal hinein. Zusätzlich wird aus Trackname und Tonumfang ein Score-Profil abgeleitet: treble, bass, alto oder grand. Notation Studio durchsucht die aktuelle MIDI-Editor-Action-Liste nach einer passenden nativen Default-Clef-Action und wendet sie an, sofern REAPER diese als Action exponiert.
+
+
+## 2026-10-04 – Notation Studio v0.1.6 / Lesbarkeit diagnostizierbar
+
+Die automatische Clef-Umschaltung aus v0.1.5 wurde zurückgenommen, weil REAPER Default Clef über das Track/Measure-Kontextmenü bereitstellt und nicht zuverlässig als normale MIDI-Editor-Action exponiert. „Lesbarkeit verbessern“ führt jetzt nur noch tatsächlich gefundene Aktionen aus und zeigt danach deren konkrete Action-Namen an. Der Zoom verwendet stabile native MIDI-Editor-Command-IDs: 40466 (Zoom to content) und 40111 (vertikal hineinzoomen, dreimal). Für Proportional Spacing, Display Quantization 1/16, Mindestnotenlänge, Triolenerkennung und automatische Stimmenzuordnung werden mehrere englische/deutsche Suchvarianten verwendet. Die Oberfläche zeigt außerdem sichtbar, ob ein MIDI-Editor gebunden ist.
+
+
+## 2026-10-04 – Notation Studio v0.1.7 / kein destruktives Einpassen mehr
+
+Der automatische Zoom von „Lesbarkeit verbessern“ wurde korrigiert. v0.1.6 führte zuerst „Zoom to content“ aus und komprimierte dadurch bei längeren/dichten Passagen die gesamte Notation in ein Fenster. v0.1.7 lässt die aktuelle Ansicht unangetastet und führt nur noch zwei horizontale Zoom-in-Schritte sowie optional einen leichten vertikalen Zoom-in-Schritt aus. „Auswahl komplett einpassen“ und „Gesamten Inhalt einpassen“ bleiben ausschließlich manuelle Buttons und werden von „Lesbarkeit verbessern“ nicht mehr aufgerufen.
+
+
+## 2026-10-04 – Notation Studio v0.1.8 / Zoom vollständig aus Lesbarkeit entfernt
+
+Auf Nutzerwunsch führt „Lesbarkeit verbessern“ keinerlei Zoom-, Fit-to-content- oder Fit-to-selection-Funktion mehr aus. Die Funktion beschränkt sich ausschließlich auf Notationsdarstellung und Anzeigeparameter. Vorhandene manuelle Zoom-/Einpass-Bedienelemente bleiben davon unabhängig.
+
+
+## 2026-10-04 – Notation Studio v0.1.9 / adaptive Zielskalierung
+
+„Lesbarkeit verbessern“ erzeugt wieder eine skalierte Ansicht, aber nicht mehr durch Fit-to-content oder blindes Zoom-in. Aus der markierten Passage werden Taktspanne und Notendichte bestimmt. Ziel sind 4 Takte bei lockerer, 3 Takte bei mittlerer und 2 Takte bei sehr dichter Notation. Liegt der REAPER-Edit-Cursor innerhalb der Auswahl, wird der sichtbare Taktbereich um diesen Cursor zentriert; andernfalls beginnt er bei der Auswahl. Für die eigentliche Skalierung wird temporär eine Time Selection über genau diesen Taktbereich gesetzt, die native MIDI-Editor-Aktion „Zoom to time selection“ ausgeführt und die ursprüngliche Time Selection anschließend wiederhergestellt.
+
+
+## 2026-10-04 – Notation Studio v0.1.10 / direkte MIDI-Editor-Skalierung
+
+Die Action-basierte Zielskalierung aus v0.1.9 wurde entfernt. REAPER stellt über MIDIEditor_GetSetting_int/SetSetting_int den direkten Wert pixels_per_timebase_unit bereit (1024 * Pixel pro Zeitbasiseinheit). „Lesbarkeit verbessern“ setzt diesen Wert nun direkt. Aus der Notendichte werden 80, 90, 105 oder 120 Pixel pro Viertelnote gewählt. Bei seconds-timebase wird der Zielwert über das aktuelle Tempo in Pixel pro Sekunde umgerechnet. Es werden weder Time Selection noch Zoom-Actions verändert.
+
+
+## 2026-10-04 – Notation Studio v0.1.11 / echte Seitenansicht
+
+Der gewünschte Referenzlook ist REAPERs native Page View, nicht eine stärker gezoomte Continuous View. „Lesbarkeit verbessern“ schaltet daher die Action „Notation: Continuous view always, regardless of zoom level“ ausdrücklich aus und überlässt REAPER den mehrzeiligen Systemumbruch. Die horizontale Skalierung wird auf einen ruhigen festen Zielwert von ca. 55 px pro Viertelnote gesetzt. Laut REAPER-Verhalten funktioniert der automatische Page View nur bei einem sichtbaren Track; bei mehreren sichtbaren Tracks bleibt die Notation absichtlich kontinuierlich.
+
+
+## 2026-10-04 – Notation Studio v0.1.12 / echte Page-View-Action
+
+Die v0.1.11 verwendete indirekt „Continuous view always“. v0.1.12 verwendet stattdessen die explizite REAPER-MIDI-Editor-Action „Notation: Page view (whole measures, multiple staff rows, when one track is visible)“ und schaltet sie gezielt ein. Zusätzlich wird die Zahl der im MIDI-Editor sichtbaren Tracks ermittelt; bei mehr als einem sichtbaren Track meldet Notation Studio ausdrücklich, dass REAPER Page View nicht aktivieren kann. Die Partiturskalierung wurde auf 48 px pro Viertelnote beruhigt.
+
+
+## 2026-10-04 – Notation Studio v0.1.13 / Page View korrekt angesteuert
+
+v0.1.12 suchte fälschlich nach einer eigenständigen „Page view“-Action. Laut REAPER-Dokumentation ist Page View ein automatischer Modus: bei genau einem sichtbaren Track und ausgeschaltetem „Continuous view always, regardless of zoom level“ wird die Notation mehrzeilig umgebrochen, solange mindestens ein voller Takt sichtbar ist. v0.1.13 sucht daher explizit die Continuous-View-Toggle-Action, schaltet sie aus und verifiziert anschließend den Toggle-State. Falls die Action nicht gefunden wird, werden passende Action-Namen zur Diagnose direkt im UI ausgegeben. Die Zielskalierung beträgt nun 42 px pro Viertelnote.
+
+
+## 2026-10-04 – Notation Studio v0.1.14 / robuster Updater
+
+Der bisherige Notation-Studio-Updater verwendete ausschließlich raw.githubusercontent.com und konnte dadurch eine gecachte ältere Datei sehen. v0.1.14 verwendet primär die GitHub Contents API mit Accept: application/vnd.github.raw+json und Cache-Buster; raw.githubusercontent.com bleibt nur Fallback. HTTP-Status, Versionsnummer, Dateityp und Lua-Syntax werden vor Installation geprüft; die vorherige Version wird als .backup gesichert.
+
+
+## 2026-10-04 – Notation Studio v0.1.15 / größere Page View + Instrumentprofil
+
+Page-View-Skalierung von 42 auf 70 px pro Viertelnote erhöht; Ziel sind ca. 4–5 Takte pro System statt einer zu kleinen Gesamtübersicht. Zusätzlich erkennt Notation Studio aus Trackname und Tonlage ein Clef-Profil (treble, alto, bass, grand). Es versucht passende MIDI-Editor-Actions für Default Clef zu finden. Da REAPER laut ReaScript-API keinen dokumentierten direkten Default-Clef-Setting-Parameter anbietet, wird bei nicht verfügbarer Action eine konkrete manuelle Anweisung im Status ausgegeben, statt eine erfolgreiche automatische Änderung vorzutäuschen.
+
+## 2026-10-09 – v1.0.56 / LilyPond-Exitcode und Entschlackung
+
+- Ursache von `LilyPond Fehler 0`: ReaScript `ExecProcess` liefert einen einzelnen String mit Exitcode, Zeilenumbruch und Ausgabe. v1.0.55 verglich diesen String mit der Zahl 0 und verlor außerdem die Compiler-Ausgabe.
+- Exitcode wird jetzt aus der ersten Zeile gelesen und numerisch geprüft. Nichtzero, fehlende und ungültige Antworten brechen vor dem Import ab. Eine erzeugte MIDI-Datei allein überschreibt keinen Compilerfehler.
+- Neu eingefügte Spuren werden über ihre Identität erkannt, auch zwischen vorhandenen Spuren. Erfolg erfordert tatsächliche MIDI-Items. Leere/nicht-MIDI-Importe werden zurückgerollt; Fortsetzungsstart und -länge bleiben geprüft. Cursor und LastMadeGUIDs werden geprüft.
+- LilyPond-Ausgabe wird in der gespeicherten Diagnose mitgeführt.
+- 36 historische ScoreFlow-/Verovio-/WebView-Hilfsfunktionen, eingebettetes HTML/JavaScript, alter Score-Zustand und die verwaiste Bridge-Abfrage entfernt. Die bestehende separate Datei `Notation Studio.lua` bleibt unverändert.
+- Datei gegenüber main v1.0.55: 140233 → 90138 UTF-8-Bytes (−35,7 %); 2106 → 928 Zeilen. Aktive KI-, SWAM-, HALion-, Export-, Verlauf- und Update-Implementierungen wurden nicht umgebaut.
+- Version 1.0.56 in derselben Datei und derselben main-Update-Linie; keine Parallelinstallation.
+
+Vor Veröffentlichung ausgeführt:
+- 30 automatisierte Prüfungen unter Lua 5.4: vollständige Syntax; kompletter Start/erster sichtbarer UI-Durchlauf mit simuliertem REAPER/ReaImGui; LF/CRLF-, Null-, Nichtzero-, fehlende/ungültige Prozessantworten; fehlendes MIDI; Importfehler/leere/nicht-MIDI-Spuren; Einfügen zwischen vorhandenen Spuren; Cursor/GUIDs/Log; Fortsetzungsstart/-länge/Rollback; MIDI-Block-Ergänzung.
+- Update-Prüfungen mit Originalfunktionen und Testdateien: gleiche/ältere Version, HTTP-Fehler, falscher Inhalt, Lua-Syntaxfehler, Installation samt Backup und Neustartplanung, Wiederherstellung bei simuliertem Rename-Fehler.
+- Echter LilyPond 2.26.0 erzeugt MIDI mit gültigem MThd-Header.
+- Isolierte Windows-REAPER-7.82/x64-Instanz mit eigenem Testprofil: komplette Dateisyntax; echter LilyPond→MIDI-Import (zwei Noten, erste Tonhöhe 60); zwei Takte Fortsetzung bei QN 8; falsche Länge vollständig zurückgerollt; echter Compilerfehler trotz erzeugtem MIDI blockiert Import; zweistaviges Klavier mit zwei importierten MIDI-Items/Spuren und vier Noten. Alle sechs Prüfungen erfolgreich.
+- Reproduzierbarer automatisierter Test: `python tools/test_lilypond_import.py` (Python + lupa, Lua 5.4). Optional tatsächlicher Compiler über `LILYPOND_EXE`; ohne Compiler wird dieser Test ausdrücklich übersprungen.
+
+Nicht ausgeführt:
+- Kein vollständiger interaktiver GUI-/Menü-/Docking-/ReaImGui-Sichttest.
+- Keine bezahlten KI-Provider-Aufrufe, musikalische Qualitätsprüfung, SWAM-/HALion-Audio- oder Export-End-to-End-Tests.
+- Kein Update über den tatsächlichen Menübutton inklusive GitHub-Netzwerkabruf und laufendem App-Neustart; HTTP-Transport/Fallback wurde nur gelesen, die Installationslogik getestet.
+- Kein macOS/Linux-Funktionstest (LilyPond-Import bleibt Windows-only).
+
+## 2026-10-09 – v1.0.57 / Kostenanzeige pro Auftrag und insgesamt
+
+Nutzerwunsch: Anzeige, kein Budgetlimit.
+
+- Kompakte Schätzung in USD für den laufenden/letzten Auftrag und für alle seit Aktivierung erfassten Composition-Studio-Aufrufe. Details mit Eingabe-/Ausgabetokens und Aufrufzahl unter »Kostenübersicht«.
+- Mehrstufige Aufträge (Controller, Komposition, Übersetzung, Retry, Zusammenfassung) werden gemeinsam gezählt. SWAM-Aufträge und separat angeforderte Werktitel beginnen einen eigenen Auftrag.
+- Nutzungsdaten stammen aus den Antworten der OpenAI Responses-, Anthropic Messages- und Gemini GenerateContent-APIs. Cache-Lesen/-Schreiben sowie Gemini-Denktokens werden separat behandelt; OpenAI-Ausgabetokens werden nicht nochmals um Denktokens erhöht.
+- Das Modell und die Preise werden beim Start eines Aufrufs festgehalten. Die Kosten bereits erfasster Antworten werden durch spätere Preisänderungen nicht rückwirkend geändert.
+- Gesamtsumme und letzter Auftrag werden über REAPER ExtState gespeichert. Ein gestarteter, noch nicht abgerechneter Aufruf wird sofort als unvollständig gespeichert. Timeout, fehlende Nutzungsdaten und unbekannte Preise bleiben sichtbar; sie werden nicht als sicher kostenlos behauptet.
+- Nur echte Top-Level-Nutzungsobjekte werden gelesen; Token-/Usage-Text im KI-Antwortinhalt wird nicht als Verbrauch interpretiert.
+- »Kostenpreise einstellen« erlaubt fünf nichtnegative USD-Tarife pro Million Token für das ausgewählte Modell: Eingabe, Ausgabe, Cache lesen, Cache schreiben 5m/1h. Google-Free-Tier kann explizit mit Nullpreisen hinterlegt werden.
+- Bestätigte Standardpreise für GPT-5.6 Sol/Terra/Luna, Claude Fable/Sonnet/Opus 5 und Gemini 3.8 Flash, Stand 09.10.2026. Die übrigen Google-Modelle bleiben ohne bestätigten voreingestellten Tarif und zeigen ihre Tokenzahlen mit unvollständiger Kostenangabe, bis ein Preis eingetragen wird.
+- GPT-5.6-Standardpreise berücksichtigen >272000 Eingabetokens. Sol-Promopreise werden nach dem 21.11.2026 nicht automatisch fortgeschrieben; dann ist eine bestätigte Preisaktualisierung/eigener Tarif nötig. Gemini 3.8 Flash wechselt am 01.01.2027 auf den offiziell angekündigten Standardpreis.
+- Das Skript bleibt dieselbe schlanke Laufzeitdatei (99389 Bytes gegenüber 140233 Bytes in v1.0.55). Keine zusätzliche App/Installation und keine neuen bezahlten Kontrollanfragen.
+
+Preis-/API-Grundlagen:
+- [OpenAI Pricing](https://developers.openai.com/api/docs/pricing), [Terra](https://developers.openai.com/api/docs/models/gpt-5.6-terra), [Luna](https://developers.openai.com/api/docs/models/gpt-5.6-luna), [Prompt caching](https://developers.openai.com/api/docs/guides/prompt-caching)
+- [Anthropic Pricing](https://platform.claude.com/docs/en/about-claude/pricing), [Prompt caching](https://platform.claude.com/docs/en/build-with-claude/prompt-caching)
+- [Gemini Pricing](https://ai.google.dev/gemini-api/docs/pricing), [Token usage/thinking](https://ai.google.dev/gemini-api/docs/generate-content/tokens)
+
+Vor Commit bestanden:
+- 32 neue automatisierte Kostenprüfungen: drei Anbieter, Cache-Kategorien, Denken ohne Doppelzählung, Standard-/Langkontextpreise, Null-/fehlende/negative/ungültige Nutzungsdaten, Top-Level-Abgrenzung, Speicherung/Neuladen, unterbrochene Aufrufe, Idempotenz, Modell-/Tarif-Snapshot, fehlender Tarif, Free-Tier-Nulltarif, Preisdialog-Validierung, Promoablauf sowie echte ai_command/ai_poll-Funktionen mit lokalen Antwortfixtures; Mehrstufen-/SWAM-Auftragsgrenzen und Übersichtstext.
+- 30 vorhandene Regressionstests erneut bestanden: vollständige Lua-5.4-Syntax, kompletter Start/erste sichtbare UI-Runde mit simuliertem REAPER/ReaImGui, LilyPond/MIDI-Importfunktion, Fortsetzungen/Rollback, Update-Validierung/Backup/Rollback und echter LilyPond-Compiler.
+- In isoliertem Windows-REAPER 7.82/x64 (Lua 5.4): komplette Skriptsyntax, Kostenrechnung mit tatsächlichem ExtState, gespeicherte Gesamtsumme/letzter Auftrag neu geladen, unterbrochener Aufruf bleibt unvollständig, neuer Auftrag erhält Gesamtsumme. Fünf Prüfungen bestanden.
+
+Grenzen:
+- Keine bezahlten KI-Aufrufe oder Abstimmung gegen eine echte Anbieterrechnung. Die Anzeige ist eine lokale Standardtarif-Schätzung; Sondertarife und frühere Aufrufe sind nicht enthalten.
+- Kein interaktiver GUI-/Preisdialog-Sichttest. Oberfläche/Preisdialog mit API-Simulation geprüft.
+- Update-Installation nur über lokale Fixtures geprüft; kein Menü-/Netzwerk-/Neustart-End-to-End-Test.
+- Kein erneuter realer MIDI-Import in REAPER für diese Änderung; die in v1.0.56 live geprüfte Importfunktion ist unverändert und die automatisierten Import-/Compilerregressionen wurden erneut ausgeführt.
+- Reproduzierbar: `python tools/test_cost_accounting.py` und `python tools/test_lilypond_import.py` (Python + lupa/Lua 5.4; optional installierter LilyPond).
+
+
+## v1.0.73 · 10.10.2026 – Denkaufwand
+
+- Vier sichtbare Optionen Kurz / Mittel / Hoch / Automatisch; neue Installationen bzw. fehlende/ungültige gespeicherte Werte starten mit Mittel. Dauerhaft in ReasoningEffortV1 gespeichert; während laufender Aufträge gesperrt.
+- Gilt für alle vorhandenen KI-Aufrufstufen. Musikalische Prompts, Ablauf und MIDI-Umsetzung unverändert.
+- Native Parameter: OpenAI reasoning.effort; Anthropic output_config.effort; Gemini 3 generationConfig.thinkingConfig.thinkingLevel. Explizit low/medium/high; Automatisch lässt diese Felder vollständig aus.
+- Gemini 2.5: appseitige Budgetzuordnung 2048 / 8192 / 24576; im Fenster sichtbar erläutert. Diese Budgets sind keine anbieterübergreifend identischen Denkstufen.
+- Diagnose speichert reasoning_mode und reasoning_requested; Kommunikationsprotokoll enthält beide für jede Anfrage. Laufendes Requestobjekt hält die tatsächlich verwendete Auswahl fest.
+- Geprüft: 28 erzeugte native JSON-Anfragen über sieben Modell-IDs und vier Modi; Standard, Speicherung/Neuladen, Busy-Sperre, ungültige Werte und Diagnose. 32 Kostenprüfungen sowie 29 Syntax-/Start-/Import-/Updateprüfungen bestanden.
+- Kein kostenpflichtiger API-Lauf und kein realer REAPER-GUI-Test. LilyPond-Compilerprüfung mangels lokalem Compiler übersprungen. Der vorhandene Testharness erhielt die inzwischen im Skript verwendete Kommunikationsdiagnose.
+
+API-Grundlagen:
+- https://developers.openai.com/api/docs/guides/reasoning
+- https://platform.claude.com/docs/en/build-with-claude/effort
+- https://ai.google.dev/gemini-api/docs/generate-content/thinking
+
+
+## v1.0.74 · 10.10.2026 – Altmodell kennzeichnen
+
+Gemini 2.5 Pro bleibt für bestehende Nutzer verfügbar, erscheint aber ausdrücklich als Altmodell mit eingeschränktem Zugang. Das Hauptfenster erklärt den Zugang nur für bisherige Nutzer und die Budgetzuordnung statt fester Denkstufen. Mittel bleibt Voreinstellung. Grundlage: https://ai.google.dev/gemini-api/docs/deprecations/ . Syntax, simulierte Startoberfläche, 28 Denksteuerungsfixtures, 32 Kosten- und 29 Import-/Updateprüfungen bestanden; kein realer REAPER-Test oder bezahlter API-Aufruf.
+
+## 19.10.2026 · 1.1.0 TEST CANDIDATE
+
+Aktueller lokaler Kandidat auf Basis von main 1.0.75: gemeinsame Workflow-Regeln aus Composition-Engine/workflow-core, explizite Vorschläge, sofort gespeicherter Ergebnisverlauf, Originalprüfung, Analyse → Überarbeitung, Übergangstakte und dynamische Modellkataloge. Die bisherigen Kompositionsverfahren bleiben erhalten. Nicht veröffentlicht und nicht praktisch als SAFE bestätigt.

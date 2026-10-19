@@ -1,0 +1,98 @@
+"""Real Qt Quick startup and editor test, using MuseScore/FileIO substitutes; no native import claim."""
+import os,sys
+import tempfile
+os.environ['QT_QPA_PLATFORM']='offscreen';os.environ['QT_QUICK_BACKEND']='software';test_dir=tempfile.TemporaryDirectory();os.environ['XDG_CONFIG_HOME']=test_dir.name
+from pathlib import Path
+if '--qt5' in sys.argv:
+ from PyQt5.QtGui import QGuiApplication,QWheelEvent
+ from PyQt5.QtQuick import QQuickView,QQuickItem
+ from PyQt5.QtCore import QUrl,QObject,QMetaObject,QPoint,QPointF,Qt,QCoreApplication
+ from PyQt5.QtTest import QTest
+else:
+ from PySide6.QtGui import QGuiApplication,QWheelEvent
+ from PySide6.QtQuick import QQuickView,QQuickItem
+ from PySide6.QtCore import QUrl,QObject,QMetaObject,QPoint,QPointF,Qt,QCoreApplication
+ from PySide6.QtTest import QTest
+app=QGuiApplication([]);app.setOrganizationName('WorkflowTest');app.setApplicationName('WorkflowTest');v=QQuickView();v.engine().addImportPath(str(Path(__file__).resolve().parent/'qml-stubs'));v.setSource(QUrl.fromLocalFile(str(Path('AI-Notation-Studio-App.qml').resolve())));assert not v.errors(),[x.toString() for x in v.errors()];v.setResizeMode(QQuickView.SizeRootObjectToView);v.resize(900,900);r=v.rootObject();QMetaObject.invokeMethod(r,'bootstrapRun');
+for child in r.findChildren(QObject):
+ try: meta=child.metaObject()
+ except RuntimeError: continue
+ if meta.indexOfProperty('compositionStrategy')>=0:
+  child.setProperty('compositionStrategy',1);child.setProperty('sameStageModel',False);child.setProperty('secondProvider','Google');child.setProperty('secondModel','gemini-3.8-flash')
+for child in r.findChildren(QObject):
+ if 'ComboBox' in child.metaObject().className() and child.property('count')==7:child.setProperty('currentIndex',2)
+r.setProperty('technicalExpanded',True);r.setProperty('compositionIdea','Eine klare, ruhige Melodie mit einer bewegten Gegenstimme.');r.setProperty('compositionJob',{'second':{'provider':'Google','model':'gemini-3.8-flash'}});r.setProperty('ideaReady',True);v.show()
+for i in range(8):app.processEvents()
+if '--qt5' not in sys.argv:assert not v.grabWindow().isNull()
+print('Actual Qt Quick UI created; no QML errors')
+for child in r.findChildren(QObject):
+ if child.metaObject().indexOfProperty('contentHeight')>=0:
+  h=child.property('contentHeight')
+  if isinstance(h,(int,float)) and h>1000:print('Scrollable content height:',h)
+# The editor updates the underlying idea; later stage model changes do not change the captured job.
+for child in r.findChildren(QObject):
+ if 'TextArea' in child.metaObject().className() and child.property('text')==r.property('compositionIdea'):
+  child.setProperty('text','Vom Nutzer bearbeitete Idee');app.processEvents();assert r.property('compositionIdea')=='Vom Nutzer bearbeitete Idee';print('Actual QML idea editing OK');break
+else:raise AssertionError('Idea editor missing')
+# Exercise actual pointer interaction with the persistent main scrollbar.
+scroll=r.findChild(QQuickItem,'compositionScroll');bar=r.findChild(QQuickItem,'compositionScrollBar')
+assert scroll and bar and scroll.property('interactive')
+assert scroll.property('contentHeight')>scroll.height()
+barpoint=bar.mapToScene(QPointF(9,int(bar.height()-10)))
+QTest.mouseClick(v,Qt.LeftButton,Qt.NoModifier,QPoint(int(barpoint.x()),int(barpoint.y())))
+QTest.qWait(200)
+assert scroll.property('contentY')>0,scroll.property('contentY')
+print('Actual main scrollbar pointer interaction scrolls content')
+scroll.setProperty('contentY',0)
+pos=scroll.mapToScene(QPointF(scroll.width()-30,10))
+wheel=QWheelEvent(pos,pos,QPoint(0,0),QPoint(0,-120),Qt.NoButton,Qt.NoModifier,Qt.NoScrollPhase,False)
+QCoreApplication.sendEvent(v,wheel);QTest.qWait(250)
+assert scroll.property('contentY')>0
+print('Actual mouse wheel scrolls main content')
+
+# A resized viewport must resize the actual main scrolling surface, not clip a fixed 900px item.
+v.resize(700,500);QTest.qWait(100)
+assert r.height()==500 and abs(scroll.height()-464)<1
+scroll.setProperty('contentY',scroll.property('contentHeight')-scroll.height())
+assert scroll.property('contentY')>0
+print('Smaller window follows viewport; bottom remains reachable')
+# Actual editable model ComboBoxes keep the existing composition API and save choices.
+primary=r.findChild(QQuickItem,'primaryModelSelector');second=r.findChild(QQuickItem,'secondModelSelector')
+assert primary and second and primary.property('editable') and second.property('editable')
+e=v.engine();e.globalObject().setProperty('studio',e.newQObject(r));e.globalObject().setProperty('primary',e.newQObject(primary));e.globalObject().setProperty('second',e.newQObject(second))
+def evaluate(code):
+ result=e.evaluate(code);assert not result.isError(),result.toString();return result.toString()
+evaluate('studio.modelLists=({OpenAI:["gpt-test-primary"],Google:["gemini-test-second"]});')
+app.processEvents()
+evaluate('primary.currentIndex=primary.find("gpt-test-primary");primary.activated(primary.currentIndex);')
+app.processEvents()
+assert evaluate('studio.providerModel("OpenAI")')=='gpt-test-primary'
+assert primary.property('editText')=='gpt-test-primary'
+evaluate('second.currentIndex=second.find("gemini-test-second");second.activated(second.currentIndex);')
+app.processEvents();assert second.property('editText')=='gemini-test-second'
+evaluate('primary.editText="gpt-own-model";primary.accepted();')
+app.processEvents();assert evaluate('studio.providerModel("OpenAI")')=='gpt-own-model'
+assert primary.property('text')=='gpt-own-model'
+print('Both actual model selectors save selections; manual model names remain usable')
+
+# Notation output must be accessible from the actual UI, not only an unused function.
+copy=r.findChild(QQuickItem,'notationStructureOpenButton')
+assert copy and not copy.property('enabled')
+r.setProperty('structureSnapshot',{'changed':4})
+app.processEvents()
+assert copy.property('enabled')
+r.setProperty('structureStatus','Korrigierte Partitur geöffnet: 4 Takte/Systeme.')
+app.processEvents()
+status=r.findChild(QQuickItem,'notationStructureStatusView')
+assert status and status.property('visible') and status.property('text')==r.property('structureStatus')
+print('Correction-copy button activates with a plan; result status is visible in the notation area')
+
+# A direct correction attempt must leave the hosted dialog alive and visible.
+direct=r.findChild(QQuickItem,'notationStructureApplyButton')
+assert direct and direct.property('enabled') and v.isVisible()
+QMetaObject.invokeMethod(direct,'clicked');app.processEvents()
+assert v.isVisible(), 'Direct correction hid the extension window'
+assert v.rootObject() is r, 'Direct correction unloaded the extension content'
+assert not r.property('busy'), 'Failed correction left controls blocked'
+assert r.property('structureStatus').startswith('Direktkorrektur nicht übernommen:'),r.property('structureStatus')
+print('Direct button keeps the native Qt host visible/alive and reports a failure without blocking controls')

@@ -1,0 +1,4 @@
+Original host Settings resolves with faithful API stub: 5.15.19
+Standalone nonmodal window: resize, unload on close and reopen PASS
+Host rendered, Windows/UNC paths and missing-app fallback OK; full app loaded: 5.15.19
+QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '/tmp/runtime-root'

@@ -1,0 +1,11 @@
+Original failure reproduced: content clipped by native window but Flickable considers it fully visible
+Actual clipped embedding scrolls by scrollbar and wheel, reaches bottom and follows window resize
+qt.qml.usedbeforedeclared: /workspace/scratch/f86916e11ab6/composition-shared/MuseScore/versions/AI-Notation-Studio-App-0.10.7.qml:717:19 Variable "i" is used before its declaration at 835:22.
+qt.qml.usedbeforedeclared: /workspace/scratch/f86916e11ab6/composition-shared/MuseScore/versions/AI-Notation-Studio-App-0.10.7.qml:725:21 Variable "i" is used before its declaration at 835:22.
+qt.qml.usedbeforedeclared: /workspace/scratch/f86916e11ab6/composition-shared/MuseScore/versions/AI-Notation-Studio-App-0.10.7.qml:832:17 Variable "i" is used before its declaration at 835:22.
+file:///workspace/scratch/f86916e11ab6/composition-shared/MuseScore/versions/AI-Notation-Studio-App-0.10.7.qml:71:5: QML Settings: The Settings type from Qt.labs.settings is deprecated and will be removed in a future release. Please use the one from QtCore instead.
+qt.qml.usedbeforedeclared: /workspace/scratch/f86916e11ab6/composition-shared/MuseScore/AI-Notation-Studio-App.qml:1057:19 Variable "i" is used before its declaration at 1175:22.
+qt.qml.usedbeforedeclared: /workspace/scratch/f86916e11ab6/composition-shared/MuseScore/AI-Notation-Studio-App.qml:1065:21 Variable "i" is used before its declaration at 1175:22.
+qt.qml.usedbeforedeclared: /workspace/scratch/f86916e11ab6/composition-shared/MuseScore/AI-Notation-Studio-App.qml:1172:17 Variable "i" is used before its declaration at 1175:22.
+file:///workspace/scratch/f86916e11ab6/composition-shared/MuseScore/AI-Notation-Studio-App.qml:184:5: QML Settings: The Settings type from Qt.labs.settings is deprecated and will be removed in a future release. Please use the one from QtCore instead.
+file:///workspace/scratch/f86916e11ab6/composition-shared/MuseScore/AI-Notation-Studio-App.qml:93:5: QML Settings: The Settings type from Qt.labs.settings is deprecated and will be removed in a future release. Please use the one from QtCore instead.

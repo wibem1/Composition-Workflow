@@ -1,0 +1,6 @@
+Live XML, missing notation, score-bound original ledger, unknown charges, corrupt metadata, export failure, CS1 recovery, history backup/recovery and missing thinking tokens OK (Qt JS test objects)
+Actual metadata save/reload retains original costs; unique history recovery and ambiguous attribution refusal OK
+Pending result with another title/CS1 never receives live-score accounting attribution
+qt.qml.usedbeforedeclared: :388:19 Variable "i" is used before its declaration at 506:22.
+qt.qml.usedbeforedeclared: :396:21 Variable "i" is used before its declaration at 506:22.
+qt.qml.usedbeforedeclared: :503:17 Variable "i" is used before its declaration at 506:22.

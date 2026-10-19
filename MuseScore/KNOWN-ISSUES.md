@@ -1,0 +1,45 @@
+# Bekannte Probleme und Grenzen
+
+Stand: **v0.10.24 – 12.10.2026**
+
+## Bewusste Grenzen
+
+- **Fortsetzen** ist nur erlaubt, wenn die Auswahl am Partiturende endet. Dadurch werden Kollisionen mit bereits vorhandener Musik vermieden.
+- **Variante erzeugen** erzeugt genau eine Variante pro Lauf.
+- **Chat – Ändern** schreibt nicht direkt in die Partitur, sondern erzeugt einen Bearbeitungsauftrag.
+- Kosten werden nicht geschätzt, solange kein verifizierter Modellpreis hinterlegt ist.
+- Diagnose-Dateiexport vorhanden; freie Zielauswahl verwendet den Windows-Speicherhelfer.
+- Qt 6.12.0: Windows-Update-Neustarttest weiterhin „File name case mismatch“. Qt 5.15.2 und Qt 6.8.3 bestehen; keine Freigabe für Qt 6.12.
+- Historisch nicht gespeicherte Provider-Usage und Rechnungsbeträge können nicht rekonstruiert werden.
+- Die neuen Diagnosepfade sind noch nicht im echten MuseScore getestet.
+- Die MusicXML-Umsetzung erkennt gängige englische und deutsche Instrumentnamen. Unbekannte Klangzuordnungen erzeugen einen Hinweis und verwenden eine Klavier-Klangvorbelegung; die Instrumentbezeichnung und das CS1-Original bleiben erhalten.
+
+## Praktisch zu testen
+
+- neue Kontextmodi mit mehreren Parts
+- Klavier mit zwei Systemen
+- Taktartwechsel beim Fortsetzen
+- Undo/Redo nach größeren Einfügeaktionen
+- Chat-Persistenz nach MuseScore-Neustart
+- Tokenfelder der tatsächlich verwendeten Modelle
+
+## v0.7.2
+
+Die bisher unzuverlässige Vorab-Verkürzung leerer Ausgangspartituren wurde entfernt. Offen ist nur noch der Praxistest, ob `del-empty-measures` auf dem Zielsystem die nach der Komposition verbliebenen leeren Endtakte korrekt entfernt.
+
+## v0.10.0
+
+- Kontextfassungen werden über MusicXML als neue Partitur geöffnet. MuseScore-spezifisches Layout, Plugins und Spezialnotation können bei einem MusicXML-Roundtrip anders erscheinen; das Ausgangsdokument bleibt erhalten.
+- Auswahlbeginn innerhalb eines Taktes benötigt im CS1-Ergebnis die angeforderten Anfangspausen. Nicht passende Kontext-Taktlängen werden mit einem konkreten Fehler gemeldet, statt die Ausgangspartitur falsch auszurichten.
+- Der lokale Kontextimport unterstützt MusicXML score-partwise mit festen Taktlängen; freie Taktarten senza-misura sind noch nicht unterstützt.
+- Seltene, nicht abbildbare Markierungen bleiben im CS1-Original erhalten und werden als Hinweise ausgewiesen. Die neue Partitur ist kein Nachweis, dass jede Spezialnotation nativ übernommen wurde.
+- Unterschiedliche Modelle erhalten den gleichen festgehaltenen Auftrag und die erste Ausgabe. Die Trennung „fertige Musik → Formatübertragung“ wird durch Prompts verlangt; völlige musikalische Unverändertheit eines zweiten KI-Aufrufs kann nicht garantiert werden.
+- Praktischer MuseScore-Test und musikalischer Vergleich der Arbeitsweisen stehen noch aus.
+
+## 0.10.1 – Installation bei leerem Fenster
+
+Der Host muss einmal manuell zusammen mit der App ersetzt und MuseScore neu gestartet werden, wenn das Fenster bereits beim Start leer bleibt. Die App allein kann einen fehlgeschlagenen Hoststart nicht reparieren. Ein tatsächlicher Windows-11-Test ist noch erforderlich; die Startkorrektur und Loader-Wiederherstellung sind unter Qt 5 und 6 automatisiert geprüft.
+
+## 0.10.2 – Windows-Startdiagnose
+
+Das weiterhin leere Fenster ist gemeldet. Seine konkrete Ursache ist noch nicht auf dem Windows-System bestätigt. Der neue Starter vermeidet zusätzliche UI-Imports und zeigt App-Ladefehler an. Die frühere Behauptung über einen fehlenden Settings-Typ war ein Teststub-Fehler, keine nachgewiesene MuseScore-Ursache.

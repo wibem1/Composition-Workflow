@@ -1,0 +1,2 @@
+Old code reports failure even though the record was successfully written
+Parsed record comparison tolerates native read newlines and still reports real write failures
